@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 客服聊天系统在线一键安装脚本
-# 版本: 1.0.1
+# 版本: 1.0.2
 # 用法: curl -fsSL https://raw.githubusercontent.com/Gaoce8888/rust-customer-service-chat/main/install-package/online-install.sh | sudo bash
 
 set -e
@@ -86,27 +86,37 @@ TMP_DIR=$(mktemp -d)
 log_info "创建临时目录: $TMP_DIR"
 
 # 下载安装包
-log_info "正在下载安装包..."
+log_info "正在从GitHub下载项目..."
 
-# 设置下载URL，这里使用假设的服务器地址
-DOWNLOAD_SERVER="https://dl.ylqkf.com/releases"
-INSTALL_PACKAGE="customer-service-chat-installer-v2.1.tar.gz"
+# 设置下载URL，使用GitHub仓库地址
+REPO_URL="https://github.com/Gaoce8888/rust-customer-service-chat"
+TARBALL_URL="$REPO_URL/archive/main.tar.gz"
 
 cd "$TMP_DIR"
-if ! wget -q "${DOWNLOAD_SERVER}/${INSTALL_PACKAGE}"; then
-    log_error "无法下载安装包，请检查网络连接"
+log_info "下载地址: $TARBALL_URL"
+if ! wget -q "$TARBALL_URL" -O repo.tar.gz; then
+    log_error "无法下载项目仓库，请检查网络连接或仓库地址"
     exit 1
 fi
 
-log_success "安装包下载成功"
+log_success "项目仓库下载成功"
 
 # 解压安装包
-log_info "正在解压安装包..."
-tar -xzf "$INSTALL_PACKAGE"
+log_info "正在解压项目..."
+tar -xzf repo.tar.gz
+
+# 进入解压后的目录
+REPO_DIR="rust-customer-service-chat-main"
+if [ ! -d "$REPO_DIR" ]; then
+    log_error "解压失败或目录结构不正确"
+    exit 1
+fi
+
+cd "$REPO_DIR/install-package"
 
 # 检查解压结果
 if [ ! -f "one-click-install.sh" ]; then
-    log_error "解压失败或安装包结构不正确"
+    log_error "找不到安装脚本，目录结构可能已变更"
     exit 1
 fi
 
@@ -117,7 +127,7 @@ chmod +x one-click-install.sh
 export CONFIRM_INSTALL=yes
 
 # 运行安装脚本
-log_info "开始安装系统..."
+log_info "开始执行安装脚本..."
 ./one-click-install.sh
 
 # 清理临时文件
@@ -129,7 +139,7 @@ log_success "====================================================="
 log_success "      客服聊天系统安装成功!"
 log_success "====================================================="
 log_success "请查看上方输出以获取访问地址和管理员账户信息"
-log_success "如果需要帮助，请访问: https://ylqkf.com/docs"
+log_success "如果需要帮助，请访问: https://github.com/Gaoce8888/rust-customer-service-chat"
 log_success "====================================================="
 
 exit 0
