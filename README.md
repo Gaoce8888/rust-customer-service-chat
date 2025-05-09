@@ -15,18 +15,25 @@
 
 ### 安装方法
 
-#### 方法1：一键安装（推荐）
+#### 方法1：一键在线安装（推荐）
 
-```bash
-wget https://dl.ylqkf.com/releases/customer-service-chat-installer-v2.1.tar.gz
-tar -xzf customer-service-chat-installer-v2.1.tar.gz
-sudo ./one-click-install.sh
-```
-
-#### 方法2：在线安装
+最简单的安装方式，一行命令自动完成所有配置：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Gaoce8888/rust-customer-service-chat/main/install-package/online-install.sh | sudo bash
+```
+
+#### 方法2：下载安装包
+
+```bash
+# 1. 下载项目仓库
+git clone https://github.com/Gaoce8888/rust-customer-service-chat.git
+
+# 2. 进入安装目录
+cd rust-customer-service-chat/install-package
+
+# 3. 运行一键安装脚本
+sudo ./one-click-install.sh
 ```
 
 #### 方法3：手动安装
@@ -158,5 +165,4 @@ sudo /opt/customer-service-chat/scripts/nginx-utils.sh add-proxy yourdomain.com 
 
 如有问题，请通过以下方式联系我们：
 
-- 邮箱：support@ylqkf.com
 - GitHub Issues: https://github.com/Gaoce8888/rust-customer-service-chat/issues
