@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 客服聊天系统一键安装脚本
-# 版本: 1.0.1
+# 版本: 1.0.2
 # 此脚本自动安装所有必需的依赖项并配置系统
 
 set -e
@@ -83,6 +83,16 @@ install_dependencies() {
     log_success "系统依赖安装完成"
 }
 
+# 验证域名是否有效（包含至少一个点）
+is_valid_domain() {
+    local domain="$1"
+    if [[ "$domain" == *"."* ]]; then
+        return 0  # 域名包含点，有效
+    else
+        return 1  # 域名不包含点，无效
+    fi
+}
+
 # 安装SSL证书
 setup_ssl() {
     log_info "设置SSL证书..."
@@ -102,9 +112,9 @@ setup_ssl() {
     
     log_info "为域名 $domain 设置SSL证书"
     
-    # 检查是否为公网环境
-    if ping -c 1 google.com &> /dev/null || ping -c 1 baidu.com &> /dev/null; then
-        log_info "检测到公网环境，尝试使用Let's Encrypt获取证书..."
+    # 验证域名是否有效
+    if is_valid_domain "$domain" && ping -c 1 google.com &> /dev/null || ping -c 1 baidu.com &> /dev/null; then
+        log_info "检测到公网环境和有效域名，尝试使用Let's Encrypt获取证书..."
         
         # 备份原有Nginx配置
         cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
@@ -115,7 +125,7 @@ setup_ssl() {
         if [ $? -eq 0 ]; then
             log_success "SSL证书安装成功"
         else
-            log_warning "SSL证书安装失败，使用自签名证书..."
+            log_warning "Let's Encrypt证书安装失败，使用自签名证书..."
             # 创建自签名证书
             mkdir -p /etc/nginx/ssl
             openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
@@ -126,7 +136,7 @@ setup_ssl() {
             log_success "自签名SSL证书创建成功"
         fi
     else
-        log_info "未检测到公网环境，使用自签名证书..."
+        log_info "未检测到公网环境或域名无效，使用自签名证书..."
         # 创建自签名证书
         mkdir -p /etc/nginx/ssl
         openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
