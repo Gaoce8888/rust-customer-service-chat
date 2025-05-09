@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 客服聊天系统在线一键安装脚本
-# 版本: 1.0.2
+# 版本: 1.0.3
 # 用法: curl -fsSL https://raw.githubusercontent.com/Gaoce8888/rust-customer-service-chat/main/install-package/online-install.sh | sudo bash
 
 set -e
@@ -79,6 +79,7 @@ log_info "安装基本工具..."
 check_dependency curl
 check_dependency wget
 check_dependency tar
+check_dependency git
 check_dependency lsof
 
 # 创建临时目录
@@ -86,42 +87,43 @@ TMP_DIR=$(mktemp -d)
 log_info "创建临时目录: $TMP_DIR"
 
 # 下载安装包
-log_info "正在从GitHub下载项目..."
+log_info "正在下载项目..."
 
-# 设置下载URL，使用GitHub仓库地址
-REPO_URL="https://github.com/Gaoce8888/rust-customer-service-chat"
-TARBALL_URL="$REPO_URL/archive/main.tar.gz"
+# 设置GitHub仓库参数
+GITHUB_REPO="https://github.com/Gaoce8888/rust-customer-service-chat.git"
+RELEASE_VERSION="v2.1"
 
 cd "$TMP_DIR"
-log_info "下载地址: $TARBALL_URL"
-if ! wget -q "$TARBALL_URL" -O repo.tar.gz; then
-    log_error "无法下载项目仓库，请检查网络连接或仓库地址"
+
+# 使用git克隆项目，确保获取完整代码
+log_info "从GitHub克隆项目: $GITHUB_REPO"
+git clone --depth=1 "$GITHUB_REPO" repo
+
+if [ ! -d "repo" ]; then
+    log_error "克隆GitHub仓库失败，请检查网络连接或仓库地址"
     exit 1
 fi
 
-log_success "项目仓库下载成功"
+log_success "项目克隆成功"
 
-# 解压安装包
-log_info "正在解压项目..."
-tar -xzf repo.tar.gz
+# 进入项目目录
+cd repo
 
-# 进入解压后的目录
-REPO_DIR="rust-customer-service-chat-main"
-if [ ! -d "$REPO_DIR" ]; then
-    log_error "解压失败或目录结构不正确"
-    exit 1
-fi
-
-cd "$REPO_DIR/install-package"
-
-# 检查解压结果
-if [ ! -f "one-click-install.sh" ]; then
+# 检查目录是否包含安装包
+if [ ! -f "install-package/one-click-install.sh" ]; then
     log_error "找不到安装脚本，目录结构可能已变更"
     exit 1
 fi
 
+# 将安装目录复制到系统路径
+log_info "准备安装文件..."
+INSTALL_SRC="install-package"
+
 # 添加执行权限
-chmod +x one-click-install.sh
+chmod +x "$INSTALL_SRC/one-click-install.sh"
+
+# 进入安装目录
+cd "$INSTALL_SRC"
 
 # 设置环境变量来跳过确认
 export CONFIRM_INSTALL=yes
