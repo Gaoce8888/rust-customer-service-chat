@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 客服聊天系统在线一键安装脚本
-# 版本: 1.0.0
+# 版本: 1.0.1
 # 用法: curl -fsSL https://raw.githubusercontent.com/Gaoce8888/rust-customer-service-chat/main/install-package/online-install.sh | sudo bash
 
 set -e
@@ -59,14 +59,19 @@ echo " - 设置系统服务和自启动"
 echo ""
 echo "=================================================="
 
-# 确认安装
-if [ -z "$CONFIRM_INSTALL" ]; then
+# 在管道中运行时自动确认安装
+if [ -t 0 ]; then
+    # 如果是交互式终端，询问确认
     read -p "是否开始安装? (y/n) " -n 1 -r
     echo ""
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         log_info "安装已取消"
         exit 0
     fi
+else
+    # 如果是通过管道运行，自动确认
+    log_info "通过管道运行，自动确认安装"
+    CONFIRM_INSTALL=yes
 fi
 
 # 安装基本工具
