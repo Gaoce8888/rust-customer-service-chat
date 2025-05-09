@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 客服聊天系统一键安装脚本
-# 版本: 1.0.0
+# 版本: 1.0.1
 # 此脚本自动安装所有必需的依赖项并配置系统
 
 set -e
@@ -51,11 +51,19 @@ echo ""
 echo "=================================================="
 
 # 确认安装
-read -p "是否开始安装? (y/n) " -n 1 -r
-echo ""
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    log_info "安装已取消"
-    exit 0
+if [ -z "$CONFIRM_INSTALL" ]; then
+    # 检查是否为交互式终端
+    if [ -t 0 ]; then
+        read -p "是否开始安装? (y/n) " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            log_info "安装已取消"
+            exit 0
+        fi
+    else
+        # 管道模式，自动确认
+        log_info "通过管道运行，自动确认安装"
+    fi
 fi
 
 # 安装系统依赖
@@ -83,8 +91,14 @@ setup_ssl() {
     default_domain=$(hostname -f)
     
     # 询问域名
-    read -p "请输入您的域名 (默认: $default_domain): " domain
-    domain=${domain:-$default_domain}
+    if [ -z "$CONFIRM_INSTALL" ]; then
+        read -p "请输入您的域名 (默认: $default_domain): " domain
+        domain=${domain:-$default_domain}
+    else
+        # 自动模式下使用默认域名
+        domain=$default_domain
+        log_info "使用默认域名: $domain"
+    fi
     
     log_info "为域名 $domain 设置SSL证书"
     
